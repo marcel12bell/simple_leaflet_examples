@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+
+  <style type="text/css">
+    html, body, #map { height: 100%; width: 100%; margin: 0; background: black; }
+  </style>
+
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <script type="text/javascript">
+    var Tiles = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '<a href="http://www.openstreetmap.org" target="_blank">Terms &amp; Feedback</a>'
+    });
+
+    var latitude = 50.941357, longitude = 6.958307, zoom_level = 14;
+
+    var map = L.map('map').addLayer(Tiles).setView([latitude, longitude], zoom_level);
+
+    //Add Points with geoJson:
+    var geojsonFeature = [{
+        "type": "Feature",
+        "properties": {
+            "name": "Dom",
+            "popupContent": "Da ist der Dom",
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [6.958307, 50.941357]
+        }
+    },
+    {
+        "type": "Feature",
+        "properties": {
+            "name": "Neumarkt",
+            "popupContent": "Hier ist der Neumarkt",
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [6.95763, 50.93523]
+        }
+    }];
+
+    var myIcon = L.icon({
+        iconUrl: 'images/pin24.png',
+        iconSize: [29, 24],
+        iconAnchor: [9, 21],
+        popupAnchor: [0, -14]
+    });
+
+    var poi = new L.geoJson(geojsonFeature, {
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup(feature.properties.popupContent);
+        },
+        pointToLayer: function(feature, latlong) {
+            return new L.marker(latlong, {icon: myIcon})
+        }
+    }).addTo(map);
+
+  </script>
+</body>
+</html>

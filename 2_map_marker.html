@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+
+  <style type="text/css">
+    html, body, #map { height: 100%; width: 100%; margin: 0; background: black; }
+  </style>
+
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <script type="text/javascript">
+    var Tiles = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '<a href="http://www.openstreetmap.org" target="_blank">Terms &amp; Feedback</a>'
+    });
+
+    var latitude = 50.941357, longitude = 6.958307, zoom_level = 14;
+
+    var map = L.map('map').addLayer(Tiles).setView([latitude, longitude], zoom_level);
+
+    //Add Points with geoJson:
+      
+
+
+    var geojsonFeature = {
+        "type": "Feature",
+        "properties": {
+            "name": "Dom",
+            "popupContent": "Da ist der Dom",
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [50.941357, 6.958307]
+        }
+    };
+
+    var geojsonMarkerOptions = {
+        radius: 8,
+        fillColor: "#ff7800",
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    };
+
+    function onEachFeature(feature, layer) {
+        // does this feature have a property named popupContent?
+        if (feature.properties && feature.properties.popupContent) {
+            layer.bindPopup(feature.properties.popupContent);
+        }
+    }
+
+    L.geoJson(geojsonFeature, {
+        onEachFeature: onEachFeature,
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker([latitude, longitude], geojsonMarkerOptions);
+        }
+    }).addTo(map);
+  
+  </script>
+</body>
+</html>
