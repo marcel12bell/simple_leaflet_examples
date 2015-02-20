@@ -1,0 +1,112 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Map ESRI REST Features on Leaflet</title>
+    <meta name="author" content="James Cardona" />
+    <!-- Date: 2012-08-31 -->
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
+    <style type="text/css">
+      html, body, #map { height: 93%; width: 100%; margin: 0; background: white; }
+      .input { width: 100%; height: 70px; }
+    </style>
+    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
+    <!--   <script type="text/javascript" src="https://rawgit.com/Esri/geojson-utils/master/src/jsonConverters.js"></script>-->
+    <script type="text/javascript" src="javascript/jsonConverters.js"></script>
+    <script type="text/javascript">
+      var map, ptSymbol, lineSymbol, polySymbol, jsonconverter, geoJsonLayer;
+
+      //default symbols for features
+      ptSymbol = {
+        radius: 8,
+        fillColor: "#ff7800",
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+      };
+
+      lineSymbol = {
+        "color": "#ff0000",
+        "weight": 4,
+        "opacity": 0.7
+      };
+
+      polySymbol = {
+        "fillColor": "#ff7800",
+        "color": "#000",
+        "weight": 1,
+        "opacity": 1,
+        "fillOpacity": 0.8
+      };
+
+      //get style object for line or polygon
+      function getAppropriateStyle(geomType){
+        var s;
+        if (geomType === "LineString" || geomType === "MultiLineString"){
+          s = lineSymbol;
+        }
+        else if (geomType === "Polygon" || geomType === "MultiPolygon"){
+          s = polySymbol;
+        }
+        return s;
+      }
+
+      //function to set popup for feature
+      function onEachFeature(feature, layer) {
+        var popupContent = "", prop;
+        if (feature.properties) {
+          for(prop in feature.properties){
+            popupContent += "<p>" + prop + ": " + feature.properties[prop] + "</p>";
+          }
+        }
+        layer.bindPopup(popupContent);
+      }
+
+      //make initial map with tile layer. Leaflet sets centerpoint of map using lat (y),long (x) not x,y
+      $(document).ready(function(){
+        jsonconverter = esriConverter();
+        var latitude = 50.941357, longitude = 6.958307, zoom_level = 14;
+        map = L.map("map").setView([latitude, longitude], zoom_level);
+        L.tileLayer("http://acetate.geoiq.com/tiles/acetate/{z}/{x}/{y}.png", {
+          attribution: "Map data <a href='http://geocommons.com'>Geocommons</a>",
+          maxZoom: 18
+          }).addTo(map);
+      });
+
+      //fetch sample features, convert to geojson, and map them
+      function display() {
+        if (geoJsonLayer){
+          map.removeLayer(geoJsonLayer);
+        }
+        var esriObject = JSON.parse($(".input").val());
+        gcFeats = jsonconverter.toGeoJson(esriObject);
+        if (gcFeats && gcFeats.features){
+          symbol = getAppropriateStyle(gcFeats.features[0].geometry.type);
+          geoJsonLayer = L.geoJson(gcFeats,{
+            style: symbol,
+            onEachFeature: onEachFeature,
+            pointToLayer: function(feature,latlng){
+              return L.circleMarker(latlng,ptSymbol);
+            }
+          });
+          geoJsonLayer.addTo(map);
+        }
+      };
+
+    </script>
+  </head>
+  <body>
+    <div id="map" >
+    </div>
+    <div style="padding: 5px">
+      Esri Json:
+      <textarea class="input" type="text" name="url" value="" placeholder="copy paste from http://offenedaten-koeln.de/[...]"></textarea>
+      <button onclick="display()">Display</button>
+    </div>
+  </body>
+</html>
